@@ -7,14 +7,18 @@ Parameters:
     Description: CodeComit repository name
     Type: String
     Default: myrepo
+  BuildProjectName:
+    Description: CodeBuild project name
+    Type: String
+    Default: myproject
   DeployApplicationName:
     Description: CodeDeploy application name
     Type: String
-    Default: DemoApplication
+    Default: deployApplication
   DeploymentConfig:
-    Description: Fleet configured in CodeDeploy
+    Description: CodeDeploy configuration name
     Type: String
-    Default: DemoFleet
+    Default: deploymentConfig
 
 Resources:
   CodePipelineArtifactStoreBucket:
@@ -121,47 +125,6 @@ Resources:
             - AmazonCloudWatchEventRole
             - Arn
           Id: codepipeline-AppPipeline
-  
-  # CodeBuildに適用するIAMRole
-  CodeBuildServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      Path: /
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: codebuild.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonS3FullAccess
-      Policies:
-        - PolicyName: CodeBuildAccess
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-
-  # CodeBuild
-  CodeBuildProject:
-    Type: AWS::CodeBuild::Project
-    Properties:
-      Artifacts:
-        Type: CODEPIPELINE
-      Source:
-        Type: CODEPIPELINE
-      Environment:
-        ComputeType: BUILD_GENERAL1_SMALL
-        Image: aws/codebuild/nodejs:6.3.1
-        Type: LINUX_CONTAINER
-      Name: !Ref AWS::StackName
-      ServiceRole: !Ref CodeBuildServiceRole
 
   # CodePipeline
   AppPipeline:
@@ -196,7 +159,7 @@ Resources:
                 Version: 1
                 Provider: CodeBuild
               Configuration:
-                ProjectName: !Ref CodeBuildProject
+                ProjectName: !Ref BuildProjectName
               RunOrder: 1
               InputArtifacts:
                 - Name: SourceOutput
@@ -204,7 +167,7 @@ Resources:
                 - Name: BuildOutput
         - Name: Deploy
           Actions:
-            - Name: BetaAction
+            - Name: Deploy
               InputArtifacts:
                 - Name: BuildOutput
               ActionTypeId:

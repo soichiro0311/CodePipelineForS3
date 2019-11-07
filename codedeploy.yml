@@ -17,10 +17,15 @@ Resources:
             Principal:
               Service: codedeploy.amazonaws.com
             Action: sts:AssumeRole
-          - Effect: Allow
-            Action:
-              - 's3:*'
-            Resource: '*'
+      Policies:
+        - PolicyName: AWS-CodeDeploy-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:*'
+                Resource: '*'
             
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole

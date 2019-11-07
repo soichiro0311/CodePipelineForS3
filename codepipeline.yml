@@ -11,18 +11,14 @@ Parameters:
     Description: CodeBuild project name
     Type: String
     Default: myproject
-  DeployApplicationName:
-    Description: CodeDeploy application name
-    Type: String
-    Default: deployApplication
-  DeploymentConfig:
-    Description: CodeDeploy configuration name
-    Type: String
-    Default: deploymentConfig
 
 Resources:
   CodePipelineArtifactStoreBucket:
     Type: 'AWS::S3::Bucket'
+  
+  DeployBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
 
   CodePipelineArtifactStoreBucketPolicy:
     Type: 'AWS::S3::BucketPolicy'
@@ -174,10 +170,10 @@ Resources:
                 Category: Deploy
                 Owner: AWS
                 Version: 1
-                Provider: CodeDeploy
+                Provider: S3
               Configuration:
-                ApplicationName: !Ref DeployApplicationName
-                DeploymentGroupName: !Ref DeploymentConfig
+                BucketName: !Ref DeployBucket
+                Extract: true
               RunOrder: 1
       ArtifactStore:
         Type: S3
